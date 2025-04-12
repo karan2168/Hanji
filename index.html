@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVA-METHOD-WEBSITE</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0d1117;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #f75c03;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #161b22;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #f75c03;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .info-box {
+      margin-top: 20px;
+      text-align: left;
+      background-color: #1f2937;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .section-title {
+      border-bottom: 1px solid #f75c03;
+      margin-bottom: 10px;
+      color: #f75c03;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>EVA-METHOD-WEBSITE</h1>
+  <p>Fetch detailed information about any Free Fire player by UID</p>
+
+  <div class="container">
+    <input type="text" id="playerUid" placeholder="Enter Player UID">
+    <select id="server">
+      <option value="IND">IND</option>
+    </select>
+    <button onclick="fetchPlayerInfo()">Search</button>
+
+    <div id="playerInfo" class="info-box"></div>
+  </div>
+
+  <script>
+    async function fetchPlayerInfo() {
+      const uid = document.getElementById('playerUid').value;
+      if (!uid) return alert('Please enter a UID');
+
+      const formData = new FormData();
+      formData.append('uid', uid);
+
+      const infoDiv = document.getElementById('playerInfo');
+      infoDiv.innerHTML = 'Loading...';
+
+      try {
+        const response = await fetch('/get_player_info', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.status !== 'success') {
+          infoDiv.innerHTML = 'Player not found or API error.';
+          return;
+        }
+
+        const p = data.data;
+
+        infoDiv.innerHTML = `
+          <div class="section-title">${p.name} <span style="float:right">UID: ${uid}</span></div>
+
+          <div class="section-title">Player Info</div>
+          <p><strong>Name:</strong> ${p.name}</p>
+          <p><strong>Level:</strong> ${p.level}</p>
+          <p><strong>Server:</strong> IND</p>
+          <p><strong>Likes:</strong> ${p.likes}</p>
+          <p><strong>Booyah Pass Level:</strong> ${p.bpass}</p>
+          <p><strong>Bio:</strong> ${p.bio || 'N/A'}</p>
+          <p><strong>Account Created:</strong> ${p.created}</p>
+
+          <div class="section-title">Guild Info</div>
+          <p><strong>Guild Name:</strong> ${p.guild?.name || 'N/A'}</p>
+          <p><strong>Guild Level:</strong> ${p.guild?.level || 'N/A'}</p>
+          <p><strong>Members Count:</strong> ${p.guild?.memberCount || 'N/A'}</p>
+
+          <div class="section-title">Guild Leader</div>
+          <p><strong>Name:</strong> ${p.guild?.leader?.name || 'N/A'}</p>
+          <p><strong>Level:</strong> ${p.guild?.leader?.level || 'N/A'}</p>
+          <p><strong>Likes:</strong> ${p.guild?.leader?.likes || 'N/A'}</p>
+          <p><strong>Booyah Pass Level:</strong> ${p.guild?.leader?.bpass || 'N/A'}</p>
+          <p><strong>Account Created:</strong> ${p.guild?.leader?.created || 'N/A'}</p>
+
+          <div class="section-title">Pet Info</div>
+          <p>${p.pet || 'No pet information available'}</p>
+        `;
+      } catch (error) {
+        infoDiv.innerHTML = 'Error fetching data. Please try again later.';
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
